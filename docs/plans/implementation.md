@@ -28,11 +28,13 @@ tanstack-start-ds-api-demo/
       src/routes/
       src/features/todos/
       src/features/chat/
-      src/server/functions/
-      src/server/services/
+      src/contracts/        # ブラウザにも渡せる業務DTOと入力スキーマ
+      src/server/functions/ # 検証、サービス呼び出し、公開エラー変換
+      src/server/services/  # ユースケースと業務ルール
+      src/server/dependencies/ # DB・DSの組み立てと設定（composition root）
       src/queries/
   packages/
-    db/                     # アプリ所有のスキーマとDBアクセス
+    db/                     # schema、repository、migration（サーバー専用）
     ds-contract/            # API仕様、生成した型、共通fixture
     ds-client/              # 共通インターフェースとmock、http実装
     chat-adapter/           # AG-UIの検証、中継、SDKとの型の調整
@@ -50,6 +52,29 @@ tanstack-start-ds-api-demo/
 ```
 
 JavaScriptはworkspaces、Pythonはservices/ds-api内で依存関係を管理する。DSクライアントはサーバー専用とし、mockとhttpの選択をブラウザへ持たせない。モノレポでも、アプリとDSサービスは独立してビルドと起動ができる構成にする。
+
+## Start側のバックエンド責務分離
+
+`sdd-backend-template` の `routers → services → crud / apis` を参考に、同じ責務と依存の向きをTypeScriptへ適用する。既存テンプレートのコードへの依存は作らない。
+
+| テンプレートの責務 | このアプリの配置 | 内容 |
+| --- | --- | --- |
+| routers | `apps/web/src/server/functions` | Server Functionsの入口。入力検証、サービス呼び出し、公開エラーへの変換に限定 |
+| services | `apps/web/src/server/services` | TODO操作、候補の採用など業務上の判断。Router、React、Drizzle、HTTPに依存しない |
+| crud / models | `packages/db` | Drizzleスキーマ、SQL、repository実装、マイグレーション |
+| apis | `packages/ds-client` | DsClientのportとmock / HTTP実装、タイムアウト、外部応答検証 |
+| schemas | `apps/web/src/contracts` / `packages/ds-contract` | アプリの入出力DTOとDS契約を区別。DBの行やSDK内部型を画面の契約にしない |
+| dependencies / settings | `apps/web/src/server/dependencies` | 環境変数の検証と依存の組み立て。サービスに具体実装を注入 |
+
+画面・Query → Server Functions → services → repository / DsClientの順に呼ぶ。画面、loader、Server Functionsから直接SQLやDSのfetchを書かない。サービスは小さなrepository interfaceとDsClientを受け取り、テストでは差し替えられるようにする。抽象基底クラスや汎用CRUDフレームワークは作らず、必要な操作だけ定義する。
+
+DBと外部通信の実装はサーバー専用ファイルとStartのimport protectionでブラウザからの読み込みを防ぐ。公開DTO、入力スキーマ、Query定義とサーバーの組み立てを同じbarrelにまとめない。接続文字列、内部エラー詳細をブラウザへ返さない。
+
+現在のCRUDは一操作・一SQLを原子操作とする。将来、複数更新を一ユースケースとしてまとめる場合はサービスの境界でtransactionを開始し、そのtransactionに束縛したrepositoryを渡す。候補の取得中にDB transactionを保持しない。候補の保存は既存のTODO追加サービスを再利用する。
+
+業務上の未検出、入力不備、外部サービスの失敗を識別し、入口で安定した公開エラーへ変換する。例外や接続情報をそのまま返さない。ストリームの開始後の失敗は共通のRUN_ERRORとして扱う。
+
+サービスの単体テスト、実DBを使うrepositoryテスト、DSのmock / HTTP共通契約テスト、ブラウザの主要操作テストを分ける。依存境界は自動チェックを追加し、入口への業務処理の集中やブラウザからのサーバー専用importを検出する。詳細な配置と変更例を `docs/architecture.md` に記録する。
 
 ## 段階1 アプリDBとTODOを作る
 
