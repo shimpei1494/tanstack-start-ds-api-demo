@@ -16,15 +16,15 @@ TanStack Startでは、必要な処理をServer Functionsとして定義し、�
 
 ## 二つの案で示すこと
 
-| 観点 | 案1 | 案2 |
-| --- | --- | --- |
-| 主題 | Startでサーバー機能をどれだけ自然に使えるか | アプリとDSを分けて開発できるか |
-| アプリの構成 | Startと最小限のFastAPI | Startの業務処理と独立したDS API |
-| TODOの保存 | FastAPI側 | Start側 |
-| AIの呼び出し | Startのサーバー関数からFastAPIへ | StartのDSクライアントからモックまたはPython APIへ |
+| 観点           | 案1                                               | 案2                                               |
+| -------------- | ------------------------------------------------- | ------------------------------------------------- |
+| 主題           | Startでサーバー機能をどれだけ自然に使えるか       | アプリとDSを分けて開発できるか                    |
+| アプリの構成   | Startと最小限のFastAPI                            | Startの業務処理と独立したDS API                   |
+| TODOの保存     | FastAPI側                                         | Start側                                           |
+| AIの呼び出し   | Startのサーバー関数からFastAPIへ                  | StartのDSクライアントからモックまたはPython APIへ |
 | 紹介の見どころ | 関数呼び出し、型、loader、Query、サーバー専用設定 | DB所有、API契約、モックとHTTP実装の交換、担当範囲 |
-| 比較対象 | 同じ処理をNext.jsで書く説明用コード例 | 同じUIでのmockモードとhttpモード |
-| 成果物 | 機能が入った独立モノレポ | 機能が入った独立モノレポ |
+| 比較対象       | 同じ処理をNext.jsで書く説明用コード例             | 同じUIでのmockモードとhttpモード                  |
+| 成果物         | 機能が入った独立モノレポ                          | 機能が入った独立モノレポ                          |
 
 案1のFastAPIはデモを成立させるための最小限の脇役とし、アーキテクチャ改善、認証基盤刷新、ジョブ基盤、運用改善を実装テーマにしない。両案に本格的なワーカーや再試行基盤を揃えることも、最初の完成条件にはしない。
 
@@ -32,28 +32,28 @@ TanStack Startでは、必要な処理をServer Functionsとして定義し、�
 
 両案でUI、フォーム、型生成などの周辺条件を揃える。Next.jsのアプリは作らず、説明用コード例では同等の処理と条件を示す。開発ツールとチャットSDKの更新はフレームワークの利点と分けて説明する。
 
-| 用途 | 方針 | 状態 |
-| --- | --- | --- |
-| UIの基本 | ReactとReact DOMの19系 | 採用 |
-| Startのビルド | Vite | 採用 |
-| TypeScript | 7系を基準にし、ビルドとコード生成の互換性を最初に確認する | 採用方針 |
-| 単体テスト | Vitest | 採用 |
-| ブラウザテスト | Playwright | 採用 |
-| UI部品 | shadcn/uiとBase UI | 採用 |
-| CSSとアイコン | Tailwind CSS 4とLucide | 採用 |
-| 案1のPython API | FastAPI、Pydantic、Uvicorn、AG-UI Python SDK。TODOのDB操作はSQLAlchemyとAlembicの系統を使う | 最小限の構成 |
-| 案2のPython API | FastAPI、Pydantic、Uvicorn、AG-UI Python SDK。アプリDBへは接続しない | DS担当範囲 |
-| 案2のDB | PostgreSQL、Drizzle ORM、pg、Drizzle Kit | 採用 |
-| LinterとFormatter | OxlintとOxfmt。React、Hooks、アクセシビリティ等の必要なルールを確認する | 採用 |
-| 型チェック | oxlint-tsgolintを追加し、Oxlintのtype-awareとtype-checkでLintへ統合する | 初期検証後に統合 |
-| 共有UI状態 | 必要な場合はJotaiを第一候補にする | 条件付き候補 |
-| サーバーデータ | TanStack Query。Jotaiへ同じデータを複製しない | 採用 |
-| フォーム | TanStack Formを両案で使う | 採用 |
-| 入力検証 | Zod | 維持 |
-| APIの型 | openapi-typescriptで生成し、openapi-fetchで利用する | 第一候補 |
+| 用途                 | 方針                                                                                                      | 状態                                 |
+| -------------------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------ |
+| UIの基本             | ReactとReact DOMの19系                                                                                    | 採用                                 |
+| Startのビルド        | Vite                                                                                                      | 採用                                 |
+| TypeScript           | 7系を基準にし、ビルドとコード生成の互換性を最初に確認する                                                 | 採用方針                             |
+| 単体テスト           | Vitest                                                                                                    | 採用                                 |
+| ブラウザテスト       | Playwright                                                                                                | 採用                                 |
+| UI部品               | shadcn/uiとBase UI                                                                                        | 採用                                 |
+| CSSとアイコン        | Tailwind CSS 4とLucide                                                                                    | 採用                                 |
+| 案1のPython API      | FastAPI、Pydantic、Uvicorn、AG-UI Python SDK。TODOのDB操作はSQLAlchemyとAlembicの系統を使う               | 最小限の構成                         |
+| 案2のPython API      | FastAPI、Pydantic、Uvicorn、AG-UI Python SDK。アプリDBへは接続しない                                      | DS担当範囲                           |
+| 案2のDB              | PostgreSQL、Drizzle ORM、pg、Drizzle Kit                                                                  | 採用                                 |
+| LinterとFormatter    | OxlintとOxfmt。React、Hooks、アクセシビリティ等の必要なルールを確認する                                   | 採用                                 |
+| 型チェック           | oxlint-tsgolintを追加し、Oxlintのtype-awareとtype-checkでLintへ統合する                                   | 初期検証後に統合                     |
+| 共有UI状態           | 必要な場合はJotaiを第一候補にする                                                                         | 条件付き候補                         |
+| サーバーデータ       | TanStack Query。Jotaiへ同じデータを複製しない                                                             | 採用                                 |
+| フォーム             | TanStack Formを両案で使う                                                                                 | 採用                                 |
+| 入力検証             | Zod                                                                                                       | 維持                                 |
+| APIの型              | openapi-typescriptで生成し、openapi-fetchで利用する                                                       | 第一候補                             |
 | チャットUIと配信形式 | TanStack AIの@tanstack/ai-reactと@tanstack/ai、AG-UIの基本イベント。必要なら@tanstack/ai-clientも追加する | 初期導入。RCの互換性と配信を初期検証 |
-| 認証 | 初期は未導入。後からアプリ内認証を加える場合はBetter Authを第一候補にする | 追加時の候補 |
-| JSとPythonの依存管理 | Node.js 24系、npm workspaces、Pythonとuv。Pythonの品質確認はpytestとRuff等 | 共通方針 |
+| 認証                 | 初期は未導入。後からアプリ内認証を加える場合はBetter Authを第一候補にする                                 | 追加時の候補                         |
+| JSとPythonの依存管理 | Node.js 24系、npm workspaces、Pythonとuv。Pythonの品質確認はpytestとRuff等                                | 共通方針                             |
 
 Jotaiは共有するUI状態に限定し、フォーム値はフォームライブラリ、一覧と取得状態はQuery、絞り込みはURLで扱う。SSRではProviderでストアを分離する。認証を追加しても、認証の正本をJotaiに置かない。
 
@@ -88,10 +88,10 @@ TypeScript 7.0では旧JavaScriptコンパイラAPIが提供されない。OpenA
 
 紹介の主役はTanStack Startとアプリ構成とし、TODOとチャットは機能を説明するためのサンプルにする。画面の題材は「作業アシスタント」とする。TODO画面で日常のCRUDとサーバー関数を示し、チャット画面で実案件に多い会話UIとストリーミングを示す。TODOと候補提案を先に完成させ、同じアプリへチャットを追加する。
 
-| 画面 | 内容 | 見せる実装 |
-| --- | --- | --- |
-| /todos | TODO管理と、目的文からTODO候補を提案するフォーム | サーバー関数、フォーム、Query、永続保存 |
-| /chat | ダミーAIとの会話、段階的な返答、停止、エラーと再生成 | サーバー関数による配信、チャットSDK、DS APIとモックの境界 |
+| 画面   | 内容                                                 | 見せる実装                                                |
+| ------ | ---------------------------------------------------- | --------------------------------------------------------- |
+| /todos | TODO管理と、目的文からTODO候補を提案するフォーム     | サーバー関数、フォーム、Query、永続保存                   |
+| /chat  | ダミーAIとの会話、段階的な返答、停止、エラーと再生成 | サーバー関数による配信、チャットSDK、DS APIとモックの境界 |
 
 ### TODO管理
 
@@ -189,14 +189,14 @@ DSのストリーミング契約は、AG-UIの入力と基本イベントへ揃�
 
 ## データと担当の境界
 
-| 対象 | 方針 |
-| --- | --- |
-| 案1のTODOデータ | 最小限のFastAPIが読み書きする |
-| 案2のTODOデータ | Start側のアプリが読み書きする |
-| 案2の少量の業務データ | Startが必要なものをDS入力へ渡す |
-| BigQueryなどの大量データ | 将来必要な案件ではDS側が直接取得できる |
-| DSの処理とモデル | DS担当部分としてAPIの内側へ置く |
-| 案ごとのDB | 独立させ、同じテーブルを二つの実装で所有しない |
+| 対象                     | 方針                                           |
+| ------------------------ | ---------------------------------------------- |
+| 案1のTODOデータ          | 最小限のFastAPIが読み書きする                  |
+| 案2のTODOデータ          | Start側のアプリが読み書きする                  |
+| 案2の少量の業務データ    | Startが必要なものをDS入力へ渡す                |
+| BigQueryなどの大量データ | 将来必要な案件ではDS側が直接取得できる         |
+| DSの処理とモデル         | DS担当部分としてAPIの内側へ置く                |
+| 案ごとのDB               | 独立させ、同じテーブルを二つの実装で所有しない |
 
 大量データ、モデル配置、長時間ジョブは将来の適用先を説明する情報として残すが、TODOデモの実装へ持ち込まない。
 

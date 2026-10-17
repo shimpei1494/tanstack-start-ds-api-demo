@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="ja">
+  <meta charset="utf-8" /><meta
+    name="viewport"
+    content="width=device-width,initial-scale=1"
+  /><title>余白 — StartとDS APIの責務分離</title>
+  <style>
+    :root {
+      font-family:
+        system-ui,
+        -apple-system,
+        sans-serif;
+      color: #263a40;
+      background: #f5f7f3;
+      line-height: 1.9;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+    }
+    main {
+      max-width: 1120px;
+      margin: auto;
+      padding: 60px 30px;
+    }
+    header {
+      border-bottom: 1px solid #dbe2da;
+      padding-bottom: 45px;
+    }
+    small,
+    .eyebrow {
+      color: #5b806d;
+      letter-spacing: 0.16em;
+    }
+    h1 {
+      font-size: clamp(30px, 5vw, 55px);
+      line-height: 1.4;
+      letter-spacing: -0.03em;
+    }
+    h2 {
+      font-size: 27px;
+      margin-top: 65px;
+    }
+    h3 {
+      margin-top: 0;
+    }
+    p {
+      max-width: 780px;
+    }
+    a {
+      color: #216c5b;
+      text-underline-offset: 4px;
+    }
+    .lead {
+      font-size: 19px;
+      color: #536c65;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+    .card {
+      background: white;
+      border: 1px solid #dce3dc;
+      border-radius: 16px;
+      padding: 24px;
+    }
+    .number {
+      font-size: 32px;
+      color: #9ab49c;
+    }
+    .flow {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+      padding: 24px;
+      background: #e8f0e6;
+      border-radius: 16px;
+    }
+    .flow b {
+      background: white;
+      border-radius: 8px;
+      padding: 12px;
+    }
+    pre {
+      background: #203639;
+      color: #e5efdf;
+      padding: 24px;
+      overflow: auto;
+      font-size: 13px;
+      border-radius: 12px;
+      line-height: 1.7;
+    }
+    code {
+      font-family: ui-monospace, monospace;
+    }
+    img {
+      width: 100%;
+      border: 1px solid #dce3dc;
+      border-radius: 15px;
+      margin-top: 20px;
+    }
+    figure {
+      margin: 0;
+    }
+    figcaption {
+      color: #6c7d73;
+      font-size: 13px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 14px;
+    }
+    td,
+    th {
+      padding: 15px;
+      text-align: left;
+      border-bottom: 1px solid #dce3dc;
+    }
+    footer {
+      border-top: 1px solid #dce3dc;
+      padding-top: 25px;
+      margin-top: 70px;
+      color: #64796e;
+    }
+    details {
+      background: #fff;
+      padding: 20px;
+      border: 1px solid #dce3dc;
+      border-radius: 10px;
+      margin: 12px 0;
+    }
+    summary {
+      cursor: pointer;
+      font-weight: 600;
+    }
+    @media (max-width: 750px) {
+      main {
+        padding: 30px 18px;
+      }
+      .grid {
+        grid-template-columns: 1fr;
+      }
+      table {
+        font-size: 12px;
+      }
+      td,
+      th {
+        padding: 8px;
+      }
+    }
+  </style>
+  <main>
+    <header>
+      <div class="eyebrow">TANSTACK START × INDEPENDENT DS API</div>
+      <h1>アプリの責務を整えて、<br />DSと独立して開発する。</h1>
+      <p class="lead">
+        「余白」は、TODO管理とAIチャットを通して、Startが業務データを持ち、PythonのDS処理をAPIとして交換する構成を確かめるデモです。
+      </p>
+      <p>
+        <a href="http://localhost:3001/todos">アプリを開く ↗</a>　<a href="../README.md">起動手順</a
+        >　<a href="architecture.md">設計の詳細</a>
+      </p>
+    </header>
+    <h2>まず、動く画面から。</h2>
+    <div class="grid">
+      <article class="card">
+        <span class="number">01</span>
+        <h3>やることを整える</h3>
+        <p>
+          TODOの追加、編集、完了切替、削除。URLで絞り込み、再読込してもPostgreSQLのデータが残ります。
+        </p>
+      </article>
+      <article class="card">
+        <span class="number">02</span>
+        <h3>候補を見てから選ぶ</h3>
+        <p>
+          目標からTODO候補を提案。取得だけでは保存せず、利用者が選んだ候補を通常のTODOとして保存します。
+        </p>
+      </article>
+      <article class="card">
+        <span class="number">03</span>
+        <h3>途中から受け取る</h3>
+        <p>
+          工程とテキストがサーバーから順に到着。完了前の表示、停止、再生成、失敗を体験できます。
+        </p>
+      </article>
+    </div>
+    <figure>
+      <img src="images/todos.png" alt="TODO一覧と目的からの候補提案の実画面" />
+      <figcaption>
+        実装済みアプリの画面。実AIには接続せず、共通fixtureによるダミー応答で動作します。
+      </figcaption>
+    </figure>
+    <h2>Startにも、バックエンドの層を持つ。</h2>
+    <p>
+      Server
+      Functionsはリクエストの入口です。業務判断、DB操作、外部通信をそこへ集めず、責務ごとに配置しています。sdd-backend-templateのrouters
+      → services → crud / apisと同じ依存の向きです。
+    </p>
+    <div class="flow">
+      <b>画面 / Query</b><span>→</span><b>Server Functions</b><span>→</span><b>services</b
+      ><span>→</span><b>repository / DS client</b>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>責務</th>
+          <th>配置</th>
+          <th>変更の例</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>入口と入出力</td>
+          <td>apps/web/src/server/functions</td>
+          <td>入力検証、公開エラーへの変換</td>
+        </tr>
+        <tr>
+          <td>業務処理</td>
+          <td>apps/web/src/server/services</td>
+          <td>対象の未検出判定、ユースケース</td>
+        </tr>
+        <tr>
+          <td>永続化</td>
+          <td>packages/db</td>
+          <td>SQL、schema、migration</td>
+        </tr>
+        <tr>
+          <td>外部通信</td>
+          <td>packages/ds-client</td>
+          <td>接続、timeout、応答検証</td>
+        </tr>
+        <tr>
+          <td>依存の組み立て</td>
+          <td>server/dependencies</td>
+          <td>DS_MODEや接続先を選択</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      画面からSQLやDSのfetchを書かないことを自動チェックし、Startのimport
+      protectionでもサーバー専用パッケージをブラウザから保護します。サービスは小さなinterfaceを受け取り、DBやHTTPの具体実装に依存しません。
+    </p>
+    <details open>
+      <summary>動いているServer Function：TODO追加</summary>
+      <pre><code>export const createTodoFn = createServerFn({ method: &#x27;POST&#x27; })
+  .validator((input: z.input&lt;typeof createTodoInputSchema&gt;) =&gt; input)
+  .handler(({ data }) =&gt;
+    publicResult(async () =&gt; {
+      const input = validate(createTodoInputSchema, data);
+      const { getTodoService } = await import(&#x27;../dependencies/index.server&#x27;);
+      return getTodoService().create(input);
+    }),
+  );</code></pre>
+      <p>
+        <a href="../apps/web/src/server/functions/todos.ts">実装ファイルを読む</a
+        >。入口で検証し、依存を組み立てたサービスへ渡します。DB処理はこの関数に書いていません。
+      </p>
+    </details>
+    <h2>mock → HTTP。変えるのは設定。</h2>
+    <div class="grid">
+      <article class="card">
+        <h3>SWEの開発</h3>
+        <p>DS_MODE=mock。Pythonなしで画面、DB、候補採用、ストリーミングの開発を進めます。</p>
+      </article>
+      <article class="card">
+        <h3>合意する境界</h3>
+        <p>
+          候補提案はOpenAPIのJSON契約。チャットはAG-UIの入力と基本イベント。mockとHTTPを同じ契約で検証します。
+        </p>
+      </article>
+      <article class="card">
+        <h3>DSの開発</h3>
+        <p>
+          DS_MODE=http。Pythonのlogic内の関数を変更します。PythonへアプリDBの資格情報やTanStackの画面型を渡しません。
+        </p>
+      </article>
+    </div>
+    <pre><code># Pythonなしで体験
+ docker compose up --build -d
+
+# Pythonを加え、同じUIを使う
+DS_MODE=http docker compose --profile http up --build -d</code></pre>
+    <h2>AG-UIとStart、それぞれの役割。</h2>
+    <figure>
+      <img src="images/chat.png" alt="ダミーAIとのストリーミング会話の実画面" />
+      <figcaption>
+        会話状態はTanStack AI、配信とサーバー入口はStart、Pythonとのイベント境界はAG-UI。
+      </figcaption>
+    </figure>
+    <p>
+      ブラウザのuseChat fetcherからStartのPOST Server
+      Functionを呼びます。Startが入力を標準のRunAgentInputへ整え、DSクライアントから受け取ったイベントを検証してSSEで返します。まとめて取得した文字列をブラウザで演出する実装ではありません。
+    </p>
+    <div class="flow">
+      <b>RUN_STARTED</b><span>→</span><b>STEP / TEXT</b><span>→</span
+      ><b>RUN_FINISHED または RUN_ERROR</b>
+    </div>
+    <p>
+      終端のない切断は成功扱いにせず、停止は上流HTTPとPythonの生成器へ伝えます。AG-UIのすべての機能を実装した互換性は主張せず、テキスト・工程・終了・エラーに対応範囲を限定しています。
+    </p>
+    <h2>デモで試す順番</h2>
+    <ol>
+      <li>mockでTODOを作り、候補を取得。保存前のプレビューと個別採用を確認。</li>
+      <li>
+        httpへ切り替え、Pythonのlogicだけを変更。画面とDBコードを変えずに応答が変わることを確認。
+      </li>
+      <li>チャットを送信し、途中表示・工程・停止・再生成を確認。</li>
+      <li>入力に[stream-error]や[disconnect]を含め、失敗と正常終了の違いを確認。</li>
+      <li>Pythonを止め、AIの失敗とTODOの通常操作が分離していることを確認。</li>
+    </ol>
+    <h2>この構成で確かめたこと</h2>
+    <p>
+      service単体、実PostgreSQL、mockと実Pythonの共通契約、SSEのUTF-8分割・不正順序・切断・中止、Chromiumの主要操作を確認しています。詳細と実行条件は<a
+        href="verification.md"
+        >検証記録</a
+      >にあります。
+    </p>
+    <p>
+      DS分離とモック開発はNext.jsでも実現できる構成です。Startの型付き関数呼び出し、QueryやAI
+      SDKの便利さ、責務分離の利点は別々に評価します。開発速度や性能の比較を実測した成果物ではありません。
+    </p>
+    <footer>
+      ローカルの単一利用者向けデモ ·
+      実モデル、認証、永続チャット、途中再開、長時間ジョブは追加段階。<br /><a href="ds-handoff.md"
+        >DSとの引き継ぎ</a
+      >
+      · <a href="plans/implementation.md">実装計画</a>
+    </footer>
+  </main>
+</html>

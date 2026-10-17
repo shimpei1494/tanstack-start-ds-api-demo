@@ -41,7 +41,7 @@ DS_TEST_HTTP_URL=http://127.0.0.1:8001 npm test
 1. DS と SWE で入出力、上限、エラーの意味、公開する工程を決める。
 2. Pydantic のモデルと Python の関数・テストを変更する。
 3. 初回だけ `npm ci --prefix tools/openapi-codegen` で生成専用依存を用意する。
-4. `npm run contract:generate` で OpenAPI と TypeScript を生成する。
+4. `npm run contracts:generate` で OpenAPI と TypeScript を生成する。
 5. 生成した差分、Zod 境界検証、mock、共通 fixture を更新する。
 6. Python のテスト、`npm run check:generated -w @demo/ds-contract`、両モードの共通契約テストを実行する。
 
@@ -55,7 +55,7 @@ DS_TEST_HTTP_URL=http://127.0.0.1:8001 npm test
 
 基本イベントは `RUN_STARTED`、`STEP_STARTED` / `STEP_FINISHED`、`TEXT_MESSAGE_START` / `TEXT_MESSAGE_CONTENT` / `TEXT_MESSAGE_END`、`RUN_FINISHED` / `RUN_ERROR`。公式 TypeScript スキーマと Python SDK のイベント・EventEncoder を使用し、独自の AG-UI イベント仕様は作らない。採用版は JavaScript AG-UI 1.0.3、Python ag-ui-protocol 0.1.22。これは双方に共通する基本イベントの対応であり、プロトコル全体の対応は保証しない。
 
-工程 `retrieve` / `generate` を UI で表示し、モデルの内部思考は配信しない。1 回の実行は正常終了か失敗のどちらか一つで終了する。開始、工程とテキストの開始・終了、messageId / runId の対応、終端を検証し、途中切断を成功に変えない。`RUN_ERROR` は SDK が表示する処理失敗として中継する。Start のストリーム生成前の接続失敗も、開始済み SSE Response では安全な `RUN_ERROR` に変換する。
+工程 `retrieve` / `generate` を UI で表示し、モデルの内部思考は配信しない。1 回の実行は正常終了か失敗のどちらか一つで終了する。開始、工程とテキストの開始・終了、messageId / runId の対応、終端を検証し、途中切断を成功に変えない。`RUN_ERROR` は SDK が表示する処理失敗として中継する。Startは最初のイベント到着まで接続を確認し、配信開始前の入力不備・接続失敗は通常の関数エラーとして返す。SSE開始後の失敗は安全な `RUN_ERROR` に変換する。
 
 クライアント単体の既定タイムアウトは実行全体で 10 秒、アプリ設定の既定値は `DS_TIMEOUT_MS=15000`（15 秒）。中止は browser の AbortSignal、Response stream の cancel、DS クライアント、HTTP 接続、Python async generator の待機へ伝える。Python を同期関数や停止不能な GPU 呼び出しへ置き換える場合は、その処理自身の停止方法を追加で検証する。自動再試行、永続履歴、途中再開、長時間ジョブは初期実装の範囲に含めない。
 

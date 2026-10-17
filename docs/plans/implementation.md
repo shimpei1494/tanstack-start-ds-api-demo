@@ -4,16 +4,20 @@ TODO、ダミーAI候補提案、ストリーミングチャットを持つア�
 
 背景と共通仕様は [全体計画](README.md) を参照する。この責任分担はNext.jsでも成立し、Startの扱いやすさは別の評価軸とする。
 
+## 実装状況（2026-10-17）
+
+段階1〜6のアプリ機能、責務分離、mock / HTTP接続、配信契約、起動・検証手順を実装した。結果と採用版の調整は [検証記録](../verification.md)、変更時の責務は [アーキテクチャ](../architecture.md)、画面からの紹介は [HTML](../demo.html) を参照する。元の計画はGit履歴に保存している。別の初学者による体験評価、公開環境での運用検証は未実施で、追加評価として残す。
+
 ## 示したい体験
 
-| 体験 | 確認する価値 |
-| --- | --- |
-| Pythonを起動せずTODOとAI提案を使う | DSの実装待ちでアプリ開発が止まらない |
-| 設定だけ変えてPython APIを呼ぶ | UIと業務サービスを変更せず接続先を交換できる |
-| DSがPythonの関数だけ変更する | アプリDBや画面を理解せず分析処理を改善できる |
-| APIエラーを模擬する | DSの実サービスに障害を起こさずエラー表示を開発できる |
-| チャットを途中表示し、止める | モックでも配信とキャンセルを開発できる |
-| AI候補をTODOとして保存する | 保存と業務データの所有がStart側へまとまる |
+| 体験                               | 確認する価値                                         |
+| ---------------------------------- | ---------------------------------------------------- |
+| Pythonを起動せずTODOとAI提案を使う | DSの実装待ちでアプリ開発が止まらない                 |
+| 設定だけ変えてPython APIを呼ぶ     | UIと業務サービスを変更せず接続先を交換できる         |
+| DSがPythonの関数だけ変更する       | アプリDBや画面を理解せず分析処理を改善できる         |
+| APIエラーを模擬する                | DSの実サービスに障害を起こさずエラー表示を開発できる |
+| チャットを途中表示し、止める       | モックでも配信とキャンセルを開発できる               |
+| AI候補をTODOとして保存する         | 保存と業務データの所有がStart側へまとまる            |
 
 まずTODOと候補提案を作り、次にチャットを加える。分析依頼管理、実行履歴の専用テーブル、チャット履歴DB、永続ジョブを初期の完成条件にしない。
 
@@ -57,14 +61,14 @@ JavaScriptはworkspaces、Pythonはservices/ds-api内で依存関係を管理す
 
 `sdd-backend-template` の `routers → services → crud / apis` を参考に、同じ責務と依存の向きをTypeScriptへ適用する。既存テンプレートのコードへの依存は作らない。
 
-| テンプレートの責務 | このアプリの配置 | 内容 |
-| --- | --- | --- |
-| routers | `apps/web/src/server/functions` | Server Functionsの入口。入力検証、サービス呼び出し、公開エラーへの変換に限定 |
-| services | `apps/web/src/server/services` | TODO操作、候補の採用など業務上の判断。Router、React、Drizzle、HTTPに依存しない |
-| crud / models | `packages/db` | Drizzleスキーマ、SQL、repository実装、マイグレーション |
-| apis | `packages/ds-client` | DsClientのportとmock / HTTP実装、タイムアウト、外部応答検証 |
-| schemas | `apps/web/src/contracts` / `packages/ds-contract` | アプリの入出力DTOとDS契約を区別。DBの行やSDK内部型を画面の契約にしない |
-| dependencies / settings | `apps/web/src/server/dependencies` | 環境変数の検証と依存の組み立て。サービスに具体実装を注入 |
+| テンプレートの責務      | このアプリの配置                                  | 内容                                                                           |
+| ----------------------- | ------------------------------------------------- | ------------------------------------------------------------------------------ |
+| routers                 | `apps/web/src/server/functions`                   | Server Functionsの入口。入力検証、サービス呼び出し、公開エラーへの変換に限定   |
+| services                | `apps/web/src/server/services`                    | TODO操作、候補の採用など業務上の判断。Router、React、Drizzle、HTTPに依存しない |
+| crud / models           | `packages/db`                                     | Drizzleスキーマ、SQL、repository実装、マイグレーション                         |
+| apis                    | `packages/ds-client`                              | DsClientのportとmock / HTTP実装、タイムアウト、外部応答検証                    |
+| schemas                 | `apps/web/src/contracts` / `packages/ds-contract` | アプリの入出力DTOとDS契約を区別。DBの行やSDK内部型を画面の契約にしない         |
+| dependencies / settings | `apps/web/src/server/dependencies`                | 環境変数の検証と依存の組み立て。サービスに具体実装を注入                       |
 
 画面・Query → Server Functions → services → repository / DsClientの順に呼ぶ。画面、loader、Server Functionsから直接SQLやDSのfetchを書かない。サービスは小さなrepository interfaceとDsClientを受け取り、テストでは差し替えられるようにする。抽象基底クラスや汎用CRUDフレームワークは作らず、必要な操作だけ定義する。
 
@@ -103,11 +107,11 @@ npx drizzle-kit migrate
 
 最初のAPIはPOST /v1/todo-suggestionsとし、入力はgoal、出力はsuggestionsとmodel_versionに絞る。suggestionsの各要素はtitleを持つ。空の入力、入力上限、候補数、空の候補、エラー応答を契約に含める。
 
-| 担当 | 実装する範囲 |
-| --- | --- |
-| SWE | TODOのDB、画面、候補の採用、DSクライアントとモック |
-| DS | goalから候補を作るPython関数とその検証 |
-| SWEとDS | 入出力、処理時間、エラーの意味、APIへの接続 |
+| 担当    | 実装する範囲                                       |
+| ------- | -------------------------------------------------- |
+| SWE     | TODOのDB、画面、候補の採用、DSクライアントとモック |
+| DS      | goalから候補を作るPython関数とその検証             |
+| SWEとDS | 入出力、処理時間、エラーの意味、APIへの接続        |
 
 FastAPIとPydanticのスキーマからOpenAPIを生成してリポジトリへ保存し、TypeScript側の型と応答検証に使う。Pythonの実行がなくても、保存済み契約とfixtureからSWEが開発できるようにする。
 
@@ -125,8 +129,8 @@ DSクライアントには次の形の共通呼び出し口を設ける。
 
 ```typescript
 interface DsClient {
-  suggestTodos(input: { goal: string }): Promise<SuggestionResponse>
-  streamChat(input: ChatInput, signal?: AbortSignal): AsyncIterable<AgUiChatEvent>
+  suggestTodos(input: { goal: string }): Promise<SuggestionResponse>;
+  streamChat(input: ChatInput, signal?: AbortSignal): AsyncIterable<AgUiChatEvent>;
 }
 ```
 
@@ -148,10 +152,10 @@ mock実装は契約に合うfixtureを返し、短い遅延、サービスエラ
 4. サーバー設定をDS_MODE=httpへ変更して、同じ画面操作を行う。
 5. Pythonの候補生成関数を変更し、画面とアプリDBのコードを変えず結果が変わることを確認する。
 
-| モード | 呼び出し先 | Pythonサービス |
-| --- | --- | --- |
-| mock | サーバー内のfixture実装 | 不要 |
-| http | 独立したDS API | 必要。処理自体はダミー |
+| モード | 呼び出し先              | Pythonサービス         |
+| ------ | ----------------------- | ---------------------- |
+| mock   | サーバー内のfixture実装 | 不要                   |
+| http   | 独立したDS API          | 必要。処理自体はダミー |
 
 両実装を同じ契約テストに通し、形がずれたモックで開発が進まないようにする。Python停止時に勝手にmockへ切り替えず、httpの障害として表示する。モードの切り替えは起動設定で明示する。
 
@@ -163,12 +167,12 @@ mockとhttpは同じインターフェースだが、ネットワークやPython
 
 DSとの入力と出力は [ストリーミング共通契約案](streaming-contract.md) に従う。ChatInputは対応範囲を限定したAG-UIのRunAgentInputとし、TanStack固有のUIMessageはStart側で変換する。AG-UIの基本イベントを使い、フィールド、配信順序、終了条件を契約とfixtureへ含める。通常のJSON応答にはAG-UIを適用しない。
 
-| イベント | 内容 |
-| --- | --- |
-| RUN_STARTED / RUN_FINISHED | 実行の開始と正常終了 |
+| イベント                                                     | 内容                               |
+| ------------------------------------------------------------ | ---------------------------------- |
+| RUN_STARTED / RUN_FINISHED                                   | 実行の開始と正常終了               |
 | TEXT_MESSAGE_START / TEXT_MESSAGE_CONTENT / TEXT_MESSAGE_END | 返答の開始、追加テキスト、返答終了 |
-| STEP_STARTED / STEP_FINISHED | 検索、生成等の工程の開始と終了 |
-| RUN_ERROR | 途中エラーのコードとメッセージ |
+| STEP_STARTED / STEP_FINISHED                                 | 検索、生成等の工程の開始と終了     |
+| RUN_ERROR                                                    | 途中エラーのコードとメッセージ     |
 
 mockはサーバー内のasync generatorから時間差で同じAG-UIイベントを返す。httpはPythonのPOST /v1/chat/streamを呼び、SSEのAG-UIイベントを読み、同じ対応イベント型で返す。PythonはAG-UI SDKのイベント型とEventEncoderを使う。通常のJSON APIと異なり、HTTP本文を最後までjsonやtextで読み切ってから返す実装にはしない。
 

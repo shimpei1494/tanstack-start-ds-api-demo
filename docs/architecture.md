@@ -16,18 +16,18 @@ flowchart TD
   DS --> PY[Python DS API]
 ```
 
-| 配置 | 責務 | 置かない処理 |
-| --- | --- | --- |
-| `apps/web/src/routes`, `features`, `queries` | URL、表示、フォーム、Query、SDKの会話状態 | SQL、DSへのHTTP、接続設定 |
-| `apps/web/src/contracts` | 公開DTO、アプリ入力、公開エラー | Drizzleの行型、接続、内部例外 |
-| `apps/web/src/server/functions` | リクエスト検証、サービス呼び出し、公開結果への変換 | SQL、業務ルール、外部APIへのfetch |
-| `apps/web/src/server/services` | ユースケース、未検出判定、候補取得、チャットへの入力整形 | React、Router、Drizzle、環境変数、HTTP通信 |
-| `apps/web/src/server/dependencies` | 環境変数と具体実装の組み立て | 画面や業務ルール |
-| `packages/db` | テーブル、マイグレーション、repository実装 | DSの呼び出し、画面DTOの判断 |
-| `packages/ds-client` | DsClient、mock / HTTP、タイムアウト、応答検証 | TODO保存、画面の状態 |
-| `packages/ds-contract` | OpenAPI、生成型、AG-UI対応範囲、共通fixture | DB、TanStack固有のUI型 |
-| `packages/chat-adapter` | AG-UIイベント順序検証、SSE、SDKとの差分 | TODO業務ルール |
-| `services/ds-api/src/logic` | DSが差し替えるPython処理 | アプリDBや画面の型 |
+| 配置                                         | 責務                                                     | 置かない処理                               |
+| -------------------------------------------- | -------------------------------------------------------- | ------------------------------------------ |
+| `apps/web/src/routes`, `features`, `queries` | URL、表示、フォーム、Query、SDKの会話状態                | SQL、DSへのHTTP、接続設定                  |
+| `apps/web/src/contracts`                     | 公開DTO、アプリ入力、公開エラー                          | Drizzleの行型、接続、内部例外              |
+| `apps/web/src/server/functions`              | リクエスト検証、サービス呼び出し、公開結果への変換       | SQL、業務ルール、外部APIへのfetch          |
+| `apps/web/src/server/services`               | ユースケース、未検出判定、候補取得、チャットへの入力整形 | React、Router、Drizzle、環境変数、HTTP通信 |
+| `apps/web/src/server/dependencies`           | 環境変数と具体実装の組み立て                             | 画面や業務ルール                           |
+| `packages/db`                                | テーブル、マイグレーション、repository実装               | DSの呼び出し、画面DTOの判断                |
+| `packages/ds-client`                         | DsClient、mock / HTTP、タイムアウト、応答検証            | TODO保存、画面の状態                       |
+| `packages/ds-contract`                       | OpenAPI、生成型、AG-UI対応範囲、共通fixture              | DB、TanStack固有のUI型                     |
+| `packages/chat-adapter`                      | AG-UIイベント順序検証、SSE、SDKとの差分                  | TODO業務ルール                             |
+| `services/ds-api/src/logic`                  | DSが差し替えるPython処理                                 | アプリDBや画面の型                         |
 
 ## 依存を組み立てる場所
 

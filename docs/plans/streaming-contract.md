@@ -6,14 +6,14 @@
 
 ## 標準化する範囲
 
-| 項目 | 共通方針 |
-| --- | --- |
-| 接続 | StartからPythonへHTTP POST、レスポンスはSSEのtext/event-stream |
-| 入力 | AG-UIのRunAgentInputを使い、初期に受け付ける範囲を限定する |
-| 出力 | AG-UIの実行、テキスト、工程の基本イベント |
-| 実装 | Python SDKのイベント型とEventEncoder、TypeScript側の対応型と検証を利用する |
-| 互換性 | Python SDK、AG-UIスキーマ、TanStack AIの組み合わせを契約テストで確認し、固定する |
-| 案件ごとの定義 | 工程名、追加の業務入力、必要な場合だけ構造化結果のスキーマ |
+| 項目           | 共通方針                                                                         |
+| -------------- | -------------------------------------------------------------------------------- |
+| 接続           | StartからPythonへHTTP POST、レスポンスはSSEのtext/event-stream                   |
+| 入力           | AG-UIのRunAgentInputを使い、初期に受け付ける範囲を限定する                       |
+| 出力           | AG-UIの実行、テキスト、工程の基本イベント                                        |
+| 実装           | Python SDKのイベント型とEventEncoder、TypeScript側の対応型と検証を利用する       |
+| 互換性         | Python SDK、AG-UIスキーマ、TanStack AIの組み合わせを契約テストで確認し、固定する |
+| 案件ごとの定義 | 工程名、追加の業務入力、必要な場合だけ構造化結果のスキーマ                       |
 
 AG-UIの全機能を初期に実装する必要はない。標準の基本イベントを用い、対応する機能範囲を明示する。未対応のツール実行、添付、再接続による途中再開等まで動くとは扱わない。[AG-UIのイベント](https://docs.ag-ui.com/concepts/events)、[TanStack AIのイベント](https://tanstack.com/ai/latest/docs/chat/stream-events)
 
@@ -30,15 +30,15 @@ StartとPythonの両境界で入力を検証する。ブラウザから来た追
 
 ## 初期に使うイベント
 
-| イベント | 必須と条件 | 目的 |
-| --- | --- | --- |
-| RUN_STARTED | 配信が始まった実行で必須 | 実行開始とthreadId、runId |
-| STEP_STARTED / STEP_FINISHED | 工程を表示するとき | stepNameで処理段階を通知 |
-| TEXT_MESSAGE_START | 返答テキストがあるとき | assistantの返答開始とmessageId |
-| TEXT_MESSAGE_CONTENT | 返答テキストがあるとき | 同じmessageIdのdeltaを到着順に追加 |
-| TEXT_MESSAGE_END | 返答を正常に閉じるとき | 返答メッセージの終了 |
-| RUN_FINISHED | 実行が正常終了したとき | 実行全体の完了 |
-| RUN_ERROR | 配信開始後に処理失敗したとき | 利用者へ示すmessageと分類用code |
+| イベント                     | 必須と条件                   | 目的                               |
+| ---------------------------- | ---------------------------- | ---------------------------------- |
+| RUN_STARTED                  | 配信が始まった実行で必須     | 実行開始とthreadId、runId          |
+| STEP_STARTED / STEP_FINISHED | 工程を表示するとき           | stepNameで処理段階を通知           |
+| TEXT_MESSAGE_START           | 返答テキストがあるとき       | assistantの返答開始とmessageId     |
+| TEXT_MESSAGE_CONTENT         | 返答テキストがあるとき       | 同じmessageIdのdeltaを到着順に追加 |
+| TEXT_MESSAGE_END             | 返答を正常に閉じるとき       | 返答メッセージの終了               |
+| RUN_FINISHED                 | 実行が正常終了したとき       | 実行全体の完了                     |
+| RUN_ERROR                    | 配信開始後に処理失敗したとき | 利用者へ示すmessageと分類用code    |
 
 稼働中の一つの実行はRUN_FINISHEDかRUN_ERRORのどちらか一つで終了する。切断や利用者の停止では終端イベントが届かない場合があり、成功として補完しない。TEXT_MESSAGE_ENDだけで実行全体を成功扱いにしない。配信開始前の入力不備等は通常のHTTPエラーとして返す。
 
