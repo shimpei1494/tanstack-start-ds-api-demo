@@ -1,0 +1,11 @@
+{
+  "name": "@demo/chat-adapter",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "dependencies": {
+    "@ag-ui/encoder": "1.0.3",
+    "@demo/ds-contract": "*",
+    "zod": "4.6.7"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "model_version": "demo-rules-v1",
+  "suggestion_suffixes": [
+    "目的と完了条件を整理する",
+    "小さな作業に分解する",
+    "最初の一歩を実行する"
+  ],
+  "chat_deltas": [
+    "まず、目的を明確にしましょう。",
+    "次に作業を小さく分け、",
+    "今日できる一歩から始めてみてください。"
+  ],
+  "scenarios": ["normal", "[error]", "[stream-error]", "[disconnect]", "[slow]", "[invalid]"]
+}

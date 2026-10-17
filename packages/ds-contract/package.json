@@ -1,0 +1,15 @@
+{
+  "name": "@demo/ds-contract",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "scripts": {
+    "generate": "uv run --project ../../services/ds-api python ../../services/ds-api/scripts/export_openapi.py && npm run generate:types",
+    "generate:types": "node ../../tools/openapi-codegen/node_modules/openapi-typescript/bin/cli.js openapi.json -o src/openapi.ts",
+    "check:generated": "node scripts/check-generated.mjs"
+  },
+  "dependencies": {
+    "@ag-ui/core": "1.0.3",
+    "zod": "4.6.7"
+  }
+}
