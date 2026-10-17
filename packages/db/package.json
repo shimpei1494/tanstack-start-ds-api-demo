@@ -1,0 +1,23 @@
+{
+  "name": "@demo/db",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "generate": "drizzle-kit generate",
+    "migrate": "drizzle-kit migrate",
+    "seed": "tsx src/seed.ts"
+  },
+  "dependencies": {
+    "drizzle-orm": "0.45.4",
+    "pg": "8.23.1"
+  },
+  "devDependencies": {
+    "@types/pg": "8.23.1",
+    "drizzle-kit": "0.31.11",
+    "tsx": "4.23.15"
+  }
+}

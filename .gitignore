@@ -1,0 +1,16 @@
+node_modules/
+.output/
+.tanstack/
+dist/
+.env
+.env.*
+!.env.example
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.venv/
+coverage/
+playwright-report/
+test-results/
+.DS_Store
+*.tsbuildinfo

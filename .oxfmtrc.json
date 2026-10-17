@@ -1,0 +1,15 @@
+{
+  "semi": true,
+  "singleQuote": true,
+  "ignorePatterns": [
+    "**/routeTree.gen.ts",
+    "**/generated/**",
+    "**/migrations/meta/**",
+    "**/openapi.json",
+    "**/.output/**",
+    "**/.tanstack/**",
+    "**/uv.lock",
+    "package-lock.json",
+    "packages/ds-contract/src/openapi.ts"
+  ]
+}

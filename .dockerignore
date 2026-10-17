@@ -1,0 +1,9 @@
+.git
+node_modules
+**/node_modules
+**/.venv
+**/__pycache__
+**/.output
+.env
+playwright-report
+test-results

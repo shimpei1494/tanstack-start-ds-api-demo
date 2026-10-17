@@ -1,0 +1,79 @@
+{
+  "name": "tanstack-start-ds-api-demo",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "dev": "npm run dev -w @demo/web",
+    "build": "npm run build -w @demo/web",
+    "start": "npm run start -w @demo/web",
+    "lint": "oxlint --type-aware --type-check && node scripts/check-boundaries.mjs",
+    "format": "oxfmt .",
+    "format:check": "oxfmt --check .",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "db:generate": "npm run generate -w @demo/db --",
+    "db:migrate": "npm run migrate -w @demo/db",
+    "db:seed": "npm run seed -w @demo/db",
+    "check": "npm run lint && npm run format:check && npm test && npm run build",
+    "verify:type-check": "node scripts/verify-type-check.mjs",
+    "test:db": "vitest run packages/db",
+    "test:python": "cd services/ds-api && uv run pytest",
+    "lint:python": "cd services/ds-api && uv run ruff check . && uv run ruff format --check .",
+    "contracts:generate": "npm run generate -w @demo/ds-contract",
+    "contracts:types": "npm run generate:types -w @demo/ds-contract"
+  },
+  "dependencies": {
+    "@ag-ui/core": "1.0.3",
+    "@ag-ui/encoder": "1.0.3",
+    "@base-ui/react": "1.9.0",
+    "@tanstack/ai": "0.69.0",
+    "@tanstack/ai-client": "0.39.3",
+    "@tanstack/ai-react": "0.30.4",
+    "@tanstack/react-form": "1.33.5",
+    "@tanstack/react-query": "5.104.3",
+    "@tanstack/react-router": "1.170.45",
+    "@tanstack/react-router-ssr-query": "1.167.3",
+    "@tanstack/react-start": "1.169.3",
+    "class-variance-authority": "0.7.1",
+    "clsx": "2.1.1",
+    "drizzle-orm": "0.45.4",
+    "lucide-react": "1.59.0",
+    "openapi-fetch": "0.17.0",
+    "pg": "8.23.1",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "tailwind-merge": "3.7.0",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1",
+    "@tailwindcss/vite": "4.3.3",
+    "@types/node": "26.6.5",
+    "@types/pg": "8.23.1",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.2",
+    "drizzle-kit": "0.31.11",
+    "nitro": "3.0.260903-beta",
+    "oxfmt": "0.73.0",
+    "oxlint": "1.88.0",
+    "oxlint-tsgolint": "7.0.2004",
+    "tailwindcss": "4.3.3",
+    "tsx": "4.23.15",
+    "typescript": "7.0.2",
+    "vite": "8.3.4",
+    "vitest": "5.0.5"
+  },
+  "overrides": {
+    "@esbuild-kit/core-utils": {
+      "esbuild": "0.25.12"
+    }
+  }
+}
