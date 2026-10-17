@@ -32,7 +32,11 @@ export function TodoPage() {
   const client = useQueryClient();
   const todos = useQuery(todosQueryOptions(filter));
   const allTodos = useQuery(todosQueryOptions('all'));
-  const invalidate = () => client.invalidateQueries({ queryKey: todoKeys.all });
+  const invalidate = () =>
+    Promise.all([
+      client.invalidateQueries({ queryKey: todoKeys.all }),
+      client.invalidateQueries({ queryKey: ['reports'] }),
+    ]);
   const add = useMutation({
     mutationFn: async (title: string) => unwrap(await createTodoFn({ data: { title } })),
     onSuccess: invalidate,

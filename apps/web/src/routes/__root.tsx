@@ -9,6 +9,7 @@ import {
 import {
   ArrowUpRight,
   CheckCheck,
+  ChartNoAxesCombined,
   CircleHelp,
   Layers3,
   ListTodo,
@@ -88,6 +89,17 @@ function RootLayout() {
               >
                 <MessageSquare size={19} />
                 AIと考える
+              </Link>
+              <Link
+                to="/reports"
+                search={{ scenario: 'slow' }}
+                preload={false}
+                className="nav-item"
+                activeOptions={{ includeSearch: false }}
+                activeProps={{ className: 'nav-item active' }}
+              >
+                <ChartNoAxesCombined size={19} />
+                振り返る
               </Link>
             </nav>
             <div className="sidebar-note">

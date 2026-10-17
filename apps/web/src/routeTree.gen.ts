@@ -8,97 +8,106 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as ChatRouteImport } from './routes/chat'
-import { Route as TodosRouteImport } from './routes/todos'
+import { Route as rootRouteImport } from './routes/__root';
+import { Route as IndexRouteImport } from './routes/index';
+import { Route as ChatRouteImport } from './routes/chat';
+import { Route as ReportsRouteImport } from './routes/reports';
+import { Route as TodosRouteImport } from './routes/todos';
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const ChatRoute = ChatRouteImport.update({
   id: '/chat',
   path: '/chat',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
+const ReportsRoute = ReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => rootRouteImport,
+} as any);
 const TodosRoute = TodosRouteImport.update({
   id: '/todos',
   path: '/todos',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/chat': typeof ChatRoute
-  '/todos': typeof TodosRoute
+  '/': typeof IndexRoute;
+  '/chat': typeof ChatRoute;
+  '/reports': typeof ReportsRoute;
+  '/todos': typeof TodosRoute;
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/chat': typeof ChatRoute
-  '/todos': typeof TodosRoute
+  '/': typeof IndexRoute;
+  '/chat': typeof ChatRoute;
+  '/reports': typeof ReportsRoute;
+  '/todos': typeof TodosRoute;
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/chat': typeof ChatRoute
-  '/todos': typeof TodosRoute
+  __root__: typeof rootRouteImport;
+  '/': typeof IndexRoute;
+  '/chat': typeof ChatRoute;
+  '/reports': typeof ReportsRoute;
+  '/todos': typeof TodosRoute;
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/chat' | '/todos'
-  fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/chat' | '/todos'
-  id: '__root__' | '/' | '/chat' | '/todos'
-  fileRoutesById: FileRoutesById
+  fileRoutesByFullPath: FileRoutesByFullPath;
+  fullPaths: '/' | '/chat' | '/reports' | '/todos';
+  fileRoutesByTo: FileRoutesByTo;
+  to: '/' | '/chat' | '/reports' | '/todos';
+  id: '__root__' | '/' | '/chat' | '/reports' | '/todos';
+  fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  ChatRoute: typeof ChatRoute
-  TodosRoute: typeof TodosRoute
+  IndexRoute: typeof IndexRoute;
+  ChatRoute: typeof ChatRoute;
+  ReportsRoute: typeof ReportsRoute;
+  TodosRoute: typeof TodosRoute;
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
     '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+      id: '/';
+      path: '/';
+      fullPath: '/';
+      preLoaderRoute: typeof IndexRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/chat': {
-      id: '/chat'
-      path: '/chat'
-      fullPath: '/chat'
-      preLoaderRoute: typeof ChatRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+      id: '/chat';
+      path: '/chat';
+      fullPath: '/chat';
+      preLoaderRoute: typeof ChatRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    '/reports': {
+      id: '/reports';
+      path: '/reports';
+      fullPath: '/reports';
+      preLoaderRoute: typeof ReportsRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/todos': {
-      id: '/todos'
-      path: '/todos'
-      fullPath: '/todos'
-      preLoaderRoute: typeof TodosRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+      id: '/todos';
+      path: '/todos';
+      fullPath: '/todos';
+      preLoaderRoute: typeof TodosRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ChatRoute: ChatRoute,
+  ReportsRoute: ReportsRoute,
   TodosRoute: TodosRoute,
-}
+};
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}
+  ._addFileTypes<FileRouteTypes>();
