@@ -76,3 +76,11 @@ DS_TEST_HTTP_URL=http://127.0.0.1:8001 npm test
 # チャットが不要な案件
 
 `apps/web/src/features/chat`、チャット route / server function、`packages/chat-adapter`、DS クライアントの `streamChat`、Python の `/v1/chat/stream` と対応するテストを外す。候補提案の JSON API と TODO の業務サービスは独立しているため、AG-UI やチャット SDK を外しても通常の TODO と候補採用を維持できる。
+
+# 作業レポート
+
+`POST /v1/work-report`はStartが集計したtotal・completed、未完了TODOのidとtitle最大3件、デモのscenario（normal / slow / error）を受け取る。PythonはアプリDBに接続せず、summary・next_steps・model_versionを返す。入力の件数整合性、候補数、UUID、重複、文字数をPythonとZodの両方で検証する。
+
+DSが変更する関数は`services/ds-api/src/logic/demo.py`の`create_work_report`。共通fixtureのwork_reportがmockとPythonの文章規則と待機時間を定義する。slowとerrorは3秒、normalは短い80ms待機。errorは安全な503、入力不備は安全な422を返す。実モデルに交換しても、集計やTODOの保存をPythonへ移さない。
+
+画面の初回・再取得・失敗の扱いと、SSRでの注意点は[待機状態の説明](pending.md)に記録した。レポートはチャットを削除しても利用できる。

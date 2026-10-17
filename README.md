@@ -1,6 +1,6 @@
 # TanStack Start × DS API — 余白
 
-TODO管理・目的からのTODO候補提案・ストリーミングチャットを備えた、単一利用者向けのローカルデモです。実AI、APIキー、GPUは不要です。Startが業務データを所有し、DS処理はサーバー内モックと独立Python APIを設定だけで交換できます。
+TODO管理・目的からのTODO候補提案・ストリーミングチャット・作業レポートを備えた、単一利用者向けのローカルデモです。実AI、APIキー、GPUは不要です。Startが業務データを所有し、DS処理はサーバー内モックと独立Python APIを設定だけで交換できます。
 
 ![TODOと候補提案](docs/images/todos.png)
 
@@ -64,7 +64,10 @@ PythonにはDATABASE_URLを渡しません。Python APIは外部サービスと�
 - `/todos`: 追加、編集、完了切替、削除、URLによる絞り込み、再読込後の保存。
 - 目標を入力して候補を取得。取得しただけでは保存せず、必要な候補の「＋」だけをTODOに追加。
 - `/chat`: サーバーから到着する途中テキスト、検索・生成の工程、停止、再生成、会話リセット。
+- `/reports`: Startの集計とDSの要約。3秒の初回待機、前回の結果を残した再集計、失敗と再試行。
 - エラー再現: 目標やメッセージに`[error]`、`[invalid]`、`[slow]`。チャットには`[stream-error]`、`[disconnect]`も使えます。詳細は[DS引き継ぎ](docs/ds-handoff.md)。
+
+[作業レポートを開く](http://localhost:3001/reports)。ナビゲーションの「振り返る」からも移動できます。取得用useEffectやloading専用stateを追加せず、Router・Query・Suspenseで待機を扱っています。役割とコードは[待機状態の説明](docs/pending.md)へまとめました。
 
 会話はメモリ内のみです。ページ再読込やチャット画面の離脱で消えます。TODOはPostgreSQLへ保存します。
 
@@ -93,7 +96,7 @@ Drizzle + PostgreSQL / mock または Python HTTP
 | packages/chat-adapter | SDK入力変換、標準イベントの検証とSSE応答              |
 | services/ds-api       | api → schemas → logic（DSが変更する関数）             |
 
-通常のJSON候補提案はOpenAPI型とopenapi-fetchを使い、チャットだけAG-UIを使います。TanStack AIは会話状態と表示更新、StartはServer Functionsと配信、QueryはTODOのサーバーデータ、Formは入力を担当します。Base UIのButtonをアプリ内の小さなUI部品にまとめています。共有するUI状態が必要ないためJotaiは追加していません。
+通常のJSON候補提案・レポートはOpenAPI型とopenapi-fetchを使い、チャットだけAG-UIを使います。TanStack AIは会話状態と表示更新、StartはServer Functionsと配信、QueryはTODOのサーバーデータ、Formは入力を担当します。Base UIのButtonをアプリ内の小さなUI部品にまとめています。共有するUI状態が必要ないためJotaiは追加していません。
 
 ## マイグレーションと契約更新
 

@@ -228,3 +228,5 @@ DSのJSON API `POST /v1/work-report` と `DsClient.createWorkReport` を追加�
 画面はloaderで取得を開始してawaitせず、見出しと操作を先に表示する。結果欄はSuspenseで初回待機を表示し、同じ条件の再取得ではQueryのisFetchingで前回の結果を残す。初回エラーは局所的なエラー境界と再試行、再取得エラーは前回結果に添える形で表示する。取得用useEffectやloading専用useStateを追加しない。TODO更新時はレポートキャッシュも無効化する。
 
 検証では、Start→DSへ渡す入力とデータ最小化、実DBの集計・読み取り専用、mock/HTTP契約、実際の3秒待機、SSR先行配信、初回/再取得/失敗回復、モバイルを確認する。React・Query・Routerの取得状態管理とStartの型付きサーバー境界の役割を分けて説明し、コードの抜粋・画面・検証記録を更新する。
+
+追加レポートの実装とmock/HTTP両モードの検証を完了した。コードと待機状態の説明は[pending.md](../pending.md)、実行結果は[検証記録](../verification.md)を参照する。

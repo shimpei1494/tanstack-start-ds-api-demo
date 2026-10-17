@@ -54,3 +54,9 @@ flowchart TD
 - 認証を追加する: Server Functionsの共通境界で利用者を確認し、サービスへ必要な利用者情報だけ渡す。権限による対象制限はサービスとrepositoryにも反映する。
 
 チャットが不要な案件ではchat route・feature・function・service、chat-adapter、DsClientのstreamChatと対応Python endpoint、AI SDKの依存を削除できる。TODO CRUDとJSON候補提案はチャットに依存しない。
+
+## レポートの読み取りとDS連携
+
+`/reports`のサービスはReportRepositoryとDsClient.createWorkReportを受け取る。ReportRepositoryは単一SQLで件数と未完了TODO最大3件の同一時点のスナップショットを返す。サービスは読み取り完了後に必要な項目だけをDSへ渡し、DSの待機中はDBトランザクションを保持しない。集計やデータの所有はStart、要約と次の一歩の生成はDSとする。
+
+レポートはJSON応答で、AG-UIやチャットに依存しない。Queryがキャッシュ・再取得、Suspenseが初回待機、局所的なエラー境界が初回失敗を扱う。詳細とコードは[pending.md](pending.md)を参照。

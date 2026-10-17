@@ -305,6 +305,30 @@ DS_MODE=http docker compose --profile http up --build -d</code></pre>
     <p>
       終端のない切断は成功扱いにせず、停止は上流HTTPとPythonの生成器へ伝えます。AG-UIのすべての機能を実装した互換性は主張せず、テキスト・工程・終了・エラーに対応範囲を限定しています。
     </p>
+    <h2>3秒待つ処理も、画面の一部で受け止める。</h2>
+    <p>
+      作業レポートではStartがTODOを集計し、DSへ必要な情報だけを渡します。Pythonまたはmockが3秒待つ間も、見出しと操作欄を先に表示します。結果欄だけをSuspenseで待ち、再集計はQueryのisFetchingで前回の結果を残します。
+    </p>
+    <figure>
+      <img src="images/report-pending.png" alt="作業レポートの結果欄だけが待機している画面" />
+      <figcaption>初回は結果欄だけを待機表示にする。見出しと応答条件は先に表示。</figcaption>
+    </figure>
+    <figure>
+      <img src="images/report.png" alt="件数・達成率・DSの要約が届いた作業レポート" />
+      <figcaption>集計はStart、文章の生成はDS。レポートを開いてもTODOは変更しない。</figcaption>
+    </figure>
+    <pre><code>// loader: 取得を開始し、ページの表示は待たない
+void context.queryClient.prefetchQuery(reportQueryOptions(scenario));
+
+// 初回待機はSuspense、同じ条件の再取得はQueryが管理
+const { data, isFetching, error, refetch } =
+  useSuspenseQuery(reportQueryOptions(scenario));</code></pre>
+    <p>
+      取得用useEffectやloading専用stateを増やさず、待機・再取得・失敗回復を扱います。これはReact・Query・Routerの組み合わせによる効果で、Startは型付きサーバー関数とSSRの境界を提供します。初回エラー境界や再試行のコードも含めた説明は<a
+        href="pending.md"
+        >待機状態の実装</a
+      >を参照してください。
+    </p>
     <h2>デモで試す順番</h2>
     <ol>
       <li>mockでTODOを作り、候補を取得。保存前のプレビューと個別採用を確認。</li>
