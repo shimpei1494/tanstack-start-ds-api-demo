@@ -3,6 +3,7 @@ import { createDsClient } from '@demo/ds-client';
 import { createChatService } from '../services/chat';
 import { createSuggestionService } from '../services/suggestions';
 import { createTodoService } from '../services/todos';
+import { createReportService } from '../services/reports';
 import { readSettings } from './settings.server';
 
 // Lazy composition: importing a Server Function does not open a pool or read secrets.
@@ -16,7 +17,7 @@ function buildDsServices() {
     baseUrl: settings.DS_API_URL,
     timeoutMs: settings.DS_TIMEOUT_MS,
   });
-  return { suggestions: createSuggestionService(client), chat: createChatService(client) };
+  return { client, suggestions: createSuggestionService(client), chat: createChatService(client) };
 }
 
 export function getTodoService() {
@@ -27,4 +28,9 @@ export function getTodoService() {
 export function getDsServices() {
   dsServices ??= buildDsServices();
   return dsServices;
+}
+
+export function getReportService() {
+  database ??= createDatabase(readSettings().DATABASE_URL);
+  return createReportService(database.reports, getDsServices().client);
 }

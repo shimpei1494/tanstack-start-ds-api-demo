@@ -122,6 +122,54 @@
           }
         }
       }
+    },
+    "/v1/work-report": {
+      "post": {
+        "summary": "Work Report",
+        "operationId": "work_report_v1_work_report_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkReportInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkReportResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -839,6 +887,28 @@
         "title": "ReasoningMessage",
         "description": "A reasoning message containing the agent's internal reasoning process."
       },
+      "ReportTodo": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "title",
+          "id"
+        ],
+        "title": "ReportTodo"
+      },
       "ResumeEntry": {
         "properties": {
           "metadata": {
@@ -1381,6 +1451,80 @@
         ],
         "title": "VideoInputContent",
         "description": "A video input content fragment."
+      },
+      "WorkReportInput": {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Total"
+          },
+          "completed": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Completed"
+          },
+          "next_todos": {
+            "items": {
+              "$ref": "#/components/schemas/ReportTodo"
+            },
+            "type": "array",
+            "maxItems": 3,
+            "title": "Next Todos"
+          },
+          "scenario": {
+            "type": "string",
+            "enum": [
+              "normal",
+              "slow",
+              "error"
+            ],
+            "title": "Scenario"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "total",
+          "completed",
+          "next_todos",
+          "scenario"
+        ],
+        "title": "WorkReportInput"
+      },
+      "WorkReportResponse": {
+        "properties": {
+          "summary": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Summary"
+          },
+          "next_steps": {
+            "items": {
+              "type": "string",
+              "maxLength": 200,
+              "minLength": 1
+            },
+            "type": "array",
+            "maxItems": 3,
+            "title": "Next Steps"
+          },
+          "model_version": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Model Version"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "summary",
+          "next_steps",
+          "model_version"
+        ],
+        "title": "WorkReportResponse"
       }
     }
   }

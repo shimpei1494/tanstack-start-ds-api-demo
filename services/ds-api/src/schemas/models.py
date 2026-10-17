@@ -1,5 +1,8 @@
 """API contracts. Keep DS logic independent of HTTP and the application database."""
 
+from typing import Annotated, Literal
+from uuid import UUID
+
 from ag_ui.core import RunAgentInput
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -73,3 +76,58 @@ class ChatInput(RunAgentInput):
         if self.messages[-1].role != "user":
             raise ValueError("last message must be from the user")
         return self
+
+
+class ReportTodo(Suggestion):
+    id: UUID
+
+    @field_validator("id", mode="before")
+    @classmethod
+    def canonical_uuid(cls, value):
+        parsed = UUID(value) if isinstance(value, str) else value
+        if isinstance(value, str) and str(parsed) != value.lower():
+            raise ValueError("standard UUID string required")
+        if (
+            isinstance(parsed, UUID)
+            and parsed.int not in (0, (1 << 128) - 1)
+            and parsed.version not in range(1, 9)
+        ):
+            raise ValueError("invalid UUID version")
+        return value
+
+
+class WorkReportInput(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    total: int = Field(ge=0, strict=True)
+    completed: int = Field(ge=0, strict=True)
+    next_todos: list[ReportTodo] = Field(max_length=3)
+    scenario: Literal["normal", "slow", "error"]
+
+    @model_validator(mode="after")
+    def consistent_counts(self) -> "WorkReportInput":
+        if self.completed > self.total or len(self.next_todos) > self.total - self.completed:
+            raise ValueError("inconsistent report counts")
+        if len({todo.id for todo in self.next_todos}) != len(self.next_todos):
+            raise ValueError("duplicate report todo IDs")
+        return self
+
+
+class WorkReportResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    summary: str = Field(min_length=1, max_length=2000)
+    next_steps: list[Annotated[str, Field(min_length=1, max_length=200)]] = Field(max_length=3)
+    model_version: str = Field(min_length=1, max_length=100)
+
+    @field_validator("summary", "model_version")
+    @classmethod
+    def nonblank_text(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("report text required")
+        return value
+
+    @field_validator("next_steps")
+    @classmethod
+    def bounded_steps(cls, value: list[str]) -> list[str]:
+        if any(not step.strip() or len(step) > 200 for step in value):
+            raise ValueError("invalid report step")
+        return value

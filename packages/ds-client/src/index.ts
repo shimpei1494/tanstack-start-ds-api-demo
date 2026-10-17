@@ -4,10 +4,14 @@ import {
   chatInputSchema,
   suggestionInputSchema,
   suggestionResponseSchema,
+  workReportInputSchema,
+  workReportResponseSchema,
   type AgUiChatEvent,
   type ChatInput,
   type SuggestionInput,
   type SuggestionResponse,
+  type WorkReportInput,
+  type WorkReportResponse,
 } from '@demo/ds-contract';
 import type { paths } from '@demo/ds-contract';
 import fixtures from '../../ds-contract/fixtures/scenarios.json';
@@ -35,6 +39,7 @@ export class DsError extends Error {
 }
 export { DsError as DsClientError };
 export interface DsClient {
+  createWorkReport(input: WorkReportInput, signal?: AbortSignal): Promise<WorkReportResponse>;
   suggestTodos(input: SuggestionInput, signal?: AbortSignal): Promise<SuggestionResponse>;
   streamChat(input: ChatInput, signal?: AbortSignal): AsyncIterable<AgUiChatEvent>;
 }
@@ -179,6 +184,53 @@ export function createDsClient(options: {
     throw new Error('DS HTTP URL required');
   const http = createClient<paths>({ baseUrl: baseUrl ?? 'http://unused.invalid' });
   const client: DsClient = {
+    async createWorkReport(raw, signal) {
+      const input = parseInput(workReportInputSchema, raw);
+      const request = scope(signal, timeoutMs);
+      try {
+        request.signal.throwIfAborted();
+        let response: unknown;
+        if (options.mode === 'mock') {
+          const rules = fixtures.work_report;
+          await delay(
+            input.scenario === 'normal' ? rules.normal_delay_ms : rules.pending_delay_ms,
+            request.signal,
+          );
+          if (input.scenario === 'error') throw new DsError('UNAVAILABLE');
+          response = {
+            summary:
+              input.total === 0
+                ? rules.zero_summary
+                : rules.summary_template
+                    .replace('{total}', String(input.total))
+                    .replace('{completed}', String(input.completed))
+                    .replace('{remaining}', String(input.total - input.completed)),
+            next_steps: input.next_todos.map(
+              (todo) =>
+                rules.next_step_prefix +
+                Array.from(todo.title).slice(0, rules.title_limit).join('') +
+                rules.next_step_suffix,
+            ),
+            model_version: fixtures.model_version,
+          };
+        } else {
+          const result = await http.POST('/v1/work-report', {
+            body: input,
+            signal: request.signal,
+          });
+          if (!result.response.ok)
+            throw new DsError(result.response.status === 422 ? 'INVALID_INPUT' : 'UNAVAILABLE');
+          response = result.data;
+        }
+        const parsed = workReportResponseSchema.safeParse(response);
+        if (!parsed.success) throw new DsError('INVALID_RESPONSE');
+        return parsed.data;
+      } catch (error) {
+        throw request.failure(error);
+      } finally {
+        request.close();
+      }
+    },
     async suggestTodos(raw, signal) {
       const input = parseInput(suggestionInputSchema, raw);
       const request = scope(signal, timeoutMs);
@@ -272,6 +324,7 @@ export function createDsClient(options: {
     },
   };
   return {
+    createWorkReport: (input, signal) => client.createWorkReport(input, signal),
     suggestTodos: (input, signal) => client.suggestTodos(input, signal),
     streamChat(input, signal) {
       // Iterator.return() cancels an in-flight next(), not just the next await boundary.

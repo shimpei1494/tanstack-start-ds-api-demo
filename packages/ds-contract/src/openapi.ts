@@ -55,6 +55,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/work-report": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Work Report */
+        post: operations["work_report_v1_work_report_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -335,6 +352,16 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
+        /** ReportTodo */
+        ReportTodo: {
+            /** Title */
+            title: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+        };
         /**
          * ResumeEntry
          * @description A per-interrupt response in the resume array of a RunAgentInput.
@@ -546,6 +573,29 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
+        /** WorkReportInput */
+        WorkReportInput: {
+            /** Total */
+            total: number;
+            /** Completed */
+            completed: number;
+            /** Next Todos */
+            next_todos: components["schemas"]["ReportTodo"][];
+            /**
+             * Scenario
+             * @enum {string}
+             */
+            scenario: "normal" | "slow" | "error";
+        };
+        /** WorkReportResponse */
+        WorkReportResponse: {
+            /** Summary */
+            summary: string;
+            /** Next Steps */
+            next_steps: string[];
+            /** Model Version */
+            model_version: string;
+        };
     };
     responses: never;
     parameters: never;
@@ -648,6 +698,48 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    work_report_v1_work_report_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WorkReportInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkReportResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Service Unavailable */

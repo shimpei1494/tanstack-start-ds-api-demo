@@ -10,5 +10,14 @@
     "次に作業を小さく分け、",
     "今日できる一歩から始めてみてください。"
   ],
-  "scenarios": ["normal", "[error]", "[stream-error]", "[disconnect]", "[slow]", "[invalid]"]
+  "scenarios": ["normal", "[error]", "[stream-error]", "[disconnect]", "[slow]", "[invalid]"],
+  "work_report": {
+    "summary_template": "全{total}件のうち{completed}件が完了しています。残り{remaining}件です。",
+    "zero_summary": "TODOはまだありません。最初の作業を追加しましょう。",
+    "next_step_prefix": "次に「",
+    "next_step_suffix": "」を進めましょう。",
+    "title_limit": 180,
+    "normal_delay_ms": 80,
+    "pending_delay_ms": 3000
+  }
 }

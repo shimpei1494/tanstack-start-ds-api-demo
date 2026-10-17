@@ -39,6 +39,61 @@ export const suggestionResponseSchema: z.ZodType<SuggestionResponse> = z.strictO
     .min(1)
     .refine((value) => Array.from(value).length <= 100),
 });
+export type WorkReportInput = components['schemas']['WorkReportInput'];
+export type WorkReportResponse = components['schemas']['WorkReportResponse'];
+export const reportScenarioSchema = z.enum(['normal', 'slow', 'error']);
+export type ReportScenario = z.infer<typeof reportScenarioSchema>;
+export const workReportInputSchema: z.ZodType<WorkReportInput> = z
+  .strictObject({
+    total: z.number().int().nonnegative(),
+    completed: z.number().int().nonnegative(),
+    next_todos: z
+      .array(
+        z.strictObject({
+          id: z.uuid(),
+          title: z
+            .string()
+            .trim()
+            .min(1)
+            .refine((value) => Array.from(value).length <= 200),
+        }),
+      )
+      .max(3),
+    scenario: reportScenarioSchema,
+  })
+  .superRefine((input, context) => {
+    if (input.completed > input.total || input.next_todos.length > input.total - input.completed) {
+      context.addIssue({ code: 'custom', message: 'Inconsistent report counts' });
+    }
+    if (
+      new Set(input.next_todos.map((todo) => todo.id.toLowerCase())).size !==
+      input.next_todos.length
+    ) {
+      context.addIssue({ code: 'custom', message: 'Duplicate report todo IDs' });
+    }
+  });
+export const workReportResponseSchema: z.ZodType<WorkReportResponse> = z.strictObject({
+  summary: z
+    .string()
+    .trim()
+    .min(1)
+    .refine((value) => Array.from(value).length <= 2000),
+  next_steps: z
+    .array(
+      z
+        .string()
+        .trim()
+        .min(1)
+        .refine((value) => Array.from(value).length <= 200),
+    )
+    .max(3),
+  model_version: z
+    .string()
+    .trim()
+    .min(1)
+    .refine((value) => Array.from(value).length <= 100),
+});
+
 const textMessageSchema = z.strictObject({
   id: z.string().min(1),
   role: z.enum(['user', 'assistant']),

@@ -14,7 +14,7 @@ const server = createServer((request, response) => {
       runId?: string;
       threadId?: string;
     };
-    if (request.url === '/v1/todo-suggestions') {
+    if (request.url === '/v1/todo-suggestions' || request.url === '/v1/work-report') {
       response.writeHead(200, { 'Content-Type': 'application/json' });
       response.end('{broken');
       return;
@@ -133,4 +133,15 @@ it('closes the upstream socket on timeout even while keepalive comments arrive',
   await iterator.next();
   await expect(iterator.next()).rejects.toMatchObject({ code: 'TIMEOUT' });
   await waitForDisconnect('timeout');
+});
+
+it('classifies malformed report JSON as an invalid response', async () => {
+  await expect(
+    createDsClient({ mode: 'http', baseUrl }).createWorkReport({
+      total: 0,
+      completed: 0,
+      next_todos: [],
+      scenario: 'normal',
+    }),
+  ).rejects.toMatchObject({ code: 'INVALID_RESPONSE' });
 });

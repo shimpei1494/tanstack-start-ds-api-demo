@@ -7,12 +7,30 @@ from collections.abc import AsyncIterator
 from ag_ui.core import RunErrorEvent
 from ag_ui.encoder import EventEncoder
 from fastapi import FastAPI, Request
+from fastapi.exception_handlers import request_validation_exception_handler
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, StreamingResponse
 
-from src.logic.demo import stream_chat, suggest_todos
-from src.schemas.models import ChatInput, ErrorResponse, SuggestionInput, SuggestionResponse
+from src.logic.demo import create_work_report, stream_chat, suggest_todos
+from src.schemas.models import (
+    ChatInput,
+    ErrorResponse,
+    SuggestionInput,
+    SuggestionResponse,
+    WorkReportInput,
+    WorkReportResponse,
+)
 
 app = FastAPI(title="Demo DS API", version="1.0.0")
+
+
+@app.exception_handler(RequestValidationError)
+async def safe_report_validation(request: Request, error: RequestValidationError):
+    if request.url.path == "/v1/work-report":
+        return JSONResponse(
+            {"code": "INVALID_INPUT", "message": "入力内容を確認してください。"}, status_code=422
+        )
+    return await request_validation_exception_handler(request, error)
 
 
 @app.get("/health")
@@ -82,3 +100,17 @@ async def chat(input_data: ChatInput, request: Request):
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
+
+
+@app.post(
+    "/v1/work-report",
+    response_model=WorkReportResponse,
+    responses={422: {"model": ErrorResponse}, 503: {"model": ErrorResponse}},
+)
+async def work_report(input_data: WorkReportInput):
+    try:
+        return await create_work_report(input_data)
+    except ValueError:
+        return JSONResponse(
+            {"code": "UNAVAILABLE", "message": "レポートを生成できませんでした。"}, status_code=503
+        )

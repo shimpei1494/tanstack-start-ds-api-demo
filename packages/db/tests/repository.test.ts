@@ -54,4 +54,22 @@ describe.skipIf(!testUrl)('PostgreSQL todo repository', () => {
     expect(await database.todos.update(active.id, { title: 'Missing' })).toBeUndefined();
     expect(await matchingIds('all')).toEqual([completed.id]);
   });
+
+  it('reads report counts and the first three pending TODOs without changing stored rows', async () => {
+    for (let index = 0; index < 6; index++) {
+      const todo = await database.todos.create(`${prefix} report ${index}`);
+      createdIds.push(todo.id);
+      if (index % 3 === 0) await database.todos.update(todo.id, { completed: true });
+    }
+    const before = await database.todos.list('all');
+    const pending = before.filter((todo) => !todo.completed);
+    const snapshot = await database.reports.snapshot();
+    expect(snapshot).toEqual({
+      total: before.length,
+      completed: before.length - pending.length,
+      nextTodos: pending.slice(0, 3).map(({ id, title }) => ({ id, title })),
+    });
+    expect(snapshot.nextTodos).toHaveLength(3);
+    expect(await database.todos.list('all')).toEqual(before);
+  });
 });
