@@ -37,7 +37,17 @@ async def suggestions(input_data: SuggestionInput):
         )
 
 
-@app.post("/v1/chat/stream", responses={503: {"model": ErrorResponse}})
+@app.post(
+    "/v1/chat/stream",
+    response_class=StreamingResponse,
+    responses={
+        200: {
+            "description": "AG-UI basic events encoded as SSE. See the streaming contract.",
+            "content": {"text/event-stream": {"schema": {"type": "string"}}},
+        },
+        503: {"model": ErrorResponse},
+    },
+)
 async def chat(input_data: ChatInput, request: Request):
     text = input_data.messages[-1].content
     if "[error]" in text:

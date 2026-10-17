@@ -632,13 +632,13 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Successful Response */
+            /** @description AG-UI basic events encoded as SSE. See the streaming contract. */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "text/event-stream": string;
                 };
             };
             /** @description Validation Error */

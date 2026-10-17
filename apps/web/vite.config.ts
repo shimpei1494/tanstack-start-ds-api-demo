@@ -5,6 +5,16 @@ import tailwindcss from '@tailwindcss/vite';
 import { nitro } from 'nitro/vite';
 
 export default defineConfig({
-  plugins: [tanstackStart(), nitro(), tailwindcss(), react()],
+  plugins: [
+    tanstackStart({
+      importProtection: {
+        behavior: 'error',
+        client: { specifiers: ['@demo/db', '@demo/ds-client'] },
+      },
+    }),
+    nitro(),
+    tailwindcss(),
+    react(),
+  ],
   server: { port: 3001 },
 });

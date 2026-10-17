@@ -91,10 +91,12 @@
         },
         "responses": {
           "200": {
-            "description": "Successful Response",
+            "description": "AG-UI basic events encoded as SSE. See the streaming contract.",
             "content": {
-              "application/json": {
-                "schema": {}
+              "text/event-stream": {
+                "schema": {
+                  "type": "string"
+                }
               }
             }
           },

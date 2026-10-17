@@ -1,0 +1,48 @@
+name: tanstack-ds-demo
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: demo
+      POSTGRES_PASSWORD: demo
+      POSTGRES_DB: work_assistant
+    ports:
+      - '127.0.0.1:5434:5432'
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U demo -d work_assistant']
+      interval: 2s
+      timeout: 3s
+      retries: 30
+  migrate:
+    build:
+      context: .
+      target: build
+    command: ['npm', 'run', 'db:migrate']
+    environment:
+      DATABASE_URL: postgresql://demo:demo@db:5432/work_assistant
+    depends_on:
+      db:
+        condition: service_healthy
+  web:
+    build: .
+    environment:
+      DATABASE_URL: postgresql://demo:demo@db:5432/work_assistant
+      DS_MODE: ${DS_MODE:-mock}
+      DS_API_URL: http://ds-api:8000
+      DS_TIMEOUT_MS: '15000'
+    ports:
+      - '127.0.0.1:${WEB_PORT:-3001}:3000'
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+  ds-api:
+    profiles: [http]
+    build:
+      context: .
+      dockerfile: services/ds-api/Dockerfile
+    ports:
+      - '127.0.0.1:${DS_PORT:-8001}:8000'
+volumes:
+  postgres-data:

@@ -1,26 +1,23 @@
 {
   "name": "tanstack-start-ds-api-demo",
   "private": true,
-  "type": "module",
   "workspaces": [
     "apps/*",
     "packages/*"
   ],
-  "engines": {
-    "node": ">=24 <25"
-  },
+  "type": "module",
   "scripts": {
-    "dev": "npm run dev -w @demo/web",
+    "dev": "node --env-file-if-exists=.env scripts/workspace.mjs @demo/web dev",
     "build": "npm run build -w @demo/web",
-    "start": "npm run start -w @demo/web",
+    "start": "node --env-file-if-exists=.env scripts/workspace.mjs @demo/web start",
     "lint": "oxlint --type-aware --type-check && node scripts/check-boundaries.mjs",
     "format": "oxfmt .",
     "format:check": "oxfmt --check .",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "db:generate": "npm run generate -w @demo/db --",
-    "db:migrate": "npm run migrate -w @demo/db",
-    "db:seed": "npm run seed -w @demo/db",
+    "db:generate": "node --env-file-if-exists=.env scripts/workspace.mjs @demo/db generate",
+    "db:migrate": "node --env-file-if-exists=.env scripts/workspace.mjs @demo/db migrate",
+    "db:seed": "node --env-file-if-exists=.env scripts/workspace.mjs @demo/db seed",
     "check": "npm run lint && npm run format:check && npm test && npm run build",
     "verify:type-check": "node scripts/verify-type-check.mjs",
     "test:db": "vitest run packages/db",
@@ -75,5 +72,8 @@
     "@esbuild-kit/core-utils": {
       "esbuild": "0.25.12"
     }
+  },
+  "engines": {
+    "node": ">=24 <25"
   }
 }

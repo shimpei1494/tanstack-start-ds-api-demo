@@ -228,11 +228,13 @@ export function createDsClient(options: {
             body: JSON.stringify(input),
             signal: request.signal,
           });
-          if (!response.ok)
+          if (!response.ok) {
+            await response.body?.cancel();
             throw new DsError(response.status === 422 ? 'INVALID_INPUT' : 'UNAVAILABLE');
+          }
           if (
             !response.body ||
-            !response.headers.get('content-type')?.includes('text/event-stream')
+            !response.headers.get('content-type')?.toLowerCase().includes('text/event-stream')
           ) {
             await response.body?.cancel();
             throw new DsError('INVALID_RESPONSE');

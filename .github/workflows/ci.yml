@@ -1,0 +1,59 @@
+name: Verify demo
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: demo
+          POSTGRES_PASSWORD: demo
+          POSTGRES_DB: work_assistant_test
+        ports: ['5434:5432']
+        options: >-
+          --health-cmd "pg_isready -U demo -d work_assistant_test"
+          --health-interval 5s --health-timeout 5s --health-retries 15
+    env:
+      TEST_DATABASE_URL: postgresql://demo:demo@localhost:5434/work_assistant_test
+      DATABASE_URL: postgresql://demo:demo@localhost:5434/work_assistant_test
+      DS_TEST_HTTP_URL: http://127.0.0.1:8001
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: '0.12.2'
+          python-version: '3.13'
+      - run: npm ci
+      - run: npm ci --prefix tools/openapi-codegen
+      - run: uv sync --project services/ds-api --frozen
+      - run: npm run check:generated -w @demo/ds-contract
+      - run: npm run lint && npm run format:check && npm run verify:type-check
+      - run: npm run lint:python && npm run test:python
+      - name: Start real Python API for common contracts
+        run: |
+          uv run --project services/ds-api uvicorn src.api.app:app --app-dir services/ds-api --host 127.0.0.1 --port 8001 > /tmp/ds-api.log 2>&1 &
+          for attempt in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8001/health; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/ds-api.log
+          exit 1
+      - run: npm test
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - run: DS_MODE=http npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: browser-results
+          path: test-results/
