@@ -40,7 +40,10 @@ jobs:
       - run: npm run lint:python && npm run test:python
       - name: Start real Python API for common contracts
         run: |
-          uv run --project services/ds-api uvicorn src.api.app:app --app-dir services/ds-api --host 127.0.0.1 --port 8001 > /tmp/ds-api.log 2>&1 &
+          # uv sync already prepared the environment. Avoid holding uv's cache lock
+          # for the lifetime of this background server and the action's cleanup.
+          services/ds-api/.venv/bin/python -m uvicorn src.api.app:app --app-dir services/ds-api --host 127.0.0.1 --port 8001 > /tmp/ds-api.log 2>&1 &
+          echo $! > /tmp/ds-api.pid
           for attempt in $(seq 1 30); do
             if curl -fsS http://127.0.0.1:8001/health; then exit 0; fi
             sleep 1
@@ -52,6 +55,12 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
       - run: DS_MODE=http npm run test:e2e
+      - name: Stop common-contract Python API
+        if: always()
+        run: |
+          if [ -f /tmp/ds-api.pid ]; then
+            kill "$(cat /tmp/ds-api.pid)" 2>/dev/null || true
+          fi
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
