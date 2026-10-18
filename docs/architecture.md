@@ -60,3 +60,7 @@ flowchart TD
 `/reports`のサービスはReportRepositoryとDsClient.createWorkReportを受け取る。ReportRepositoryは単一SQLで件数と未完了TODO最大3件の同一時点のスナップショットを返す。サービスは読み取り完了後に必要な項目だけをDSへ渡し、DSの待機中はDBトランザクションを保持しない。集計やデータの所有はStart、要約と次の一歩の生成はDSとする。
 
 レポートはJSON応答で、AG-UIやチャットに依存しない。Queryがキャッシュ・再取得、Suspenseが初回待機、局所的なエラー境界が初回失敗を扱う。詳細とコードは[pending.md](pending.md)を参照。
+
+## 配置を別々に選ぶ
+
+StartはNode HTTPサーバー、DSはPython HTTPサービスとして独立配置する。両者をECSへ置く基準案、StartだけLambda Web Functionsへ置く案、DSのGPU・非同期推論、オンプレ構成と費用の考え方は[配置案](aws-deployment.md)を参照。SageMaker等で通信契約が異なる場合はadapterを追加する。FastAPI側でもサービスを分ければ同じ自由度は得られ、配置の自由度はフレームワークより責務と契約の分離による。

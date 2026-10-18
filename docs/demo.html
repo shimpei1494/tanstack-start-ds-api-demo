@@ -329,6 +329,60 @@ const { data, isFetching, error, refetch } =
         >待機状態の実装</a
       >を参照してください。
     </p>
+    <h2>WebとDSの置き場所を、要件から選ぶ。</h2>
+    <p>
+      まずはStartとPythonを別々のECSサービスに。DSのライブラリが大きくなったらPythonだけのCPU・RAMを増やし、GPUが必要ならDSだけをGPU環境へ移します。標準Node・Pythonのコンテナなので、オンプレDockerも配置の候補です。
+    </p>
+    <table>
+      <thead>
+        <tr>
+          <th>条件</th>
+          <th>構成案</th>
+          <th>費用を左右するもの</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>小さく試す</td>
+          <td>EC2一台に別コンテナ</td>
+          <td>VM常設、自主管理</td>
+        </tr>
+        <tr>
+          <td>CPU型の本番基準</td>
+          <td>Start / DSを別ECS＋RDS</td>
+          <td>各taskの台数・サイズ</td>
+        </tr>
+        <tr>
+          <td>Webのアクセスが変動</td>
+          <td>StartをWeb Functions、DSはECS</td>
+          <td>Web従量＋DS・DB常設</td>
+        </tr>
+        <tr>
+          <td>GPU・大きなモデル</td>
+          <td>DSをGPU付きECS等へ</td>
+          <td>GPU容量と稼働時間</td>
+        </tr>
+        <tr>
+          <td>長時間・低頻度処理</td>
+          <td>非同期SageMaker / Batch / worker</td>
+          <td>待ち時間、ジョブ基盤の追加</td>
+        </tr>
+        <tr>
+          <td>既存設備・閉域</td>
+          <td>オンプレDocker、またはAWSと接続</td>
+          <td>設備・運用・ネットワーク</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      Web FunctionsはNode.js 24 /
+      Arm64・ZIP配置の候補で、Pythonは別配置です。I/O待ちのCPU課金を抑えられても、メモリ・DS・DB・接続経路は課金対象になります。AWSへの配備と性能・実課金は未検証です。
+      <a href="aws-deployment.md">公式情報・構成図・料金の前提・採用前の検証</a>をまとめています。
+    </p>
+    <p>
+      FastAPIへまとめる案でも、APIとGPU
+      workerを分ければ同じ配置の自由度を作れます。この構成は画面・業務DBとDSの契約、リリース単位を先に分けることで変更範囲を小さくします。一方、NodeとPythonの運用、通信障害、ログの相関は考慮が必要です。
+    </p>
     <h2>デモで試す順番</h2>
     <ol>
       <li>mockでTODOを作り、候補を取得。保存前のプレビューと個別採用を確認。</li>

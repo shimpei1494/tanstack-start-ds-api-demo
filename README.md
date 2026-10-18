@@ -139,10 +139,17 @@ DS_MODE=http npm run test:e2e
 
 HTTPの共通契約テストには8001番のPython起動が必要です。HTTPのブラウザテストでは専用Python検証プロセスを8101番に起動し、停止が生成器まで届いたことも確認します。webの検証用ポートは3101番です。Chromium、DB、Pythonを含む検証手順はCIにも収めています。
 
+## AWS・オンプレで動かす場合
+
+StartとPythonを独立したECSサービスに置く構成を基準に、StartだけLambda Web Functionsへ置く案、DSだけGPU環境へ移す案、長時間処理を非同期ジョブにする案、オンプレDockerを比較できます。Pythonのライブラリや計算資源をWebと別々に選べることが、この責務分離の配置上の利点です。
+
+[配置案と料金の比較](docs/aws-deployment.md)に、6案・構成図・前提付きの月額計算例・Web Functionsの制約・FastAPI集約案との比較をまとめました。AWS構成は未デプロイの検討資料です。現在検証済みの範囲はローカルとDockerです。
+
 ## 計画と紹介資料
 
 - [全体計画](docs/plans/README.md)・[実装計画](docs/plans/implementation.md)・[配信契約](docs/plans/streaming-contract.md)
 - [実装と検証の記録](docs/verification.md)
 - [画面とコードで見る紹介HTML](docs/demo.html)
+- [AWS・オンプレの構成と料金の比較](docs/aws-deployment.md)
 
 このリポジトリで実装するのは案2です。認証、チャット履歴DB、途中再開、永続ジョブ、実モデル接続は追加段階として残しています。

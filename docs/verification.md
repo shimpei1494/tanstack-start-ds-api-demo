@@ -2,6 +2,14 @@
 
 2026-10-17、Node.js 24.22.0、npm 11.19.1、Python 3.13.14、uv 0.12.2、macOS arm64とDockerで確認した。計画の案2を実装し、もう一方のリポジトリのコードには依存していない。
 
+## 2026-10-18 push・クラウドCI・配置比較
+
+mainへpushし、[GitHub Actions](https://github.com/shimpei1494/tanstack-start-ds-api-demo/actions/runs/39120769177)が成功した。Ubuntu上の型・Lint・format・型エラー検出probe・生成差分・Python検査・実DB/実PythonのVitest・本番ビルド・mock/HTTPのChromium操作と、最後のキャッシュ保存まで確認した。
+
+初回実行は全検査が通ったが、バックグラウンドの`uv run`がキャッシュロックを保持し、setup-uvの後処理だけ失敗した。同期済みvenvのPythonを直接起動し、alwaysの終了stepで停止するよう修正した（85c4dc2）。上記の成功runはその修正後の結果。
+
+[AWS・オンプレの配置比較](aws-deployment.md)を追加した。2026-10-18の公式情報をもとに6案と料金の前提を整理し、計算と資料リンクを確認した。紹介HTMLへも比較を追加し、Chromiumのデスクトップと390px表示を確認した。AWSへのデプロイ、負荷測定、IaCの作成は行っていない。
+
 ## 2026-10-18 レポート追加の確認
 
 `/reports`を追加した。Startの単一SQLで同じ時点の集計と未完了TODO最大3件を取得し、必要な入力だけをDSへ渡す。DSのmockとPythonは共通fixtureで通常・3秒待機・3秒後失敗を再現する。DB変更とマイグレーション追加はない。
@@ -72,4 +80,4 @@ Composeのhttp環境でDSコンテナを停止し、AIの候補取得だけが�
 
 本番ビルドには第三者依存内のuse client directiveに関するNitro / Rolldownの警告が出るが、ビルドとSSR / hydration / ブラウザ操作は成功している。pytestはStarlette TestClientのhttpx非推奨警告が1件あり、現時点のテストは成功している。
 
-計画にある「初めて触る別の開発者による小変更」の体験評価は未実施。変更箇所と手順はarchitecture.mdとds-handoff.mdへ記録した。GitHub Actionsは追加したが、pushしない方針のためクラウド上の実行結果は未確認であり、ここに記載した結果はローカル実行である。
+計画にある「初めて触る別の開発者による小変更」の体験評価は未実施。変更箇所と手順はarchitecture.mdとds-handoff.mdへ記録した。初期版の表はローカル結果であり、クラウドCIの結果は冒頭の2026-10-18の記録を参照。
